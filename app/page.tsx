@@ -181,9 +181,9 @@ export default function UltimateWeddingInvitation() {
                <h2 className="text-3xl font-light uppercase tracking-[0.3em] mb-4">The Venue</h2>
                <p className="text-stone-400 italic mb-10">Polhena Reef Resort, Polhena,Matara</p>
                  <a 
-                    href="https://www.google.com/maps/search/?api=1&query=Polhena+Reef+Resort+Matara" 
-                    target="_blank" 
-                      className="inline-block px-14 py-5 border border-[#d4af37] text-[#d4af37] rounded-full text-[10px] font-bold tracking-widest hover:bg-[#d4af37] hover:text-black transition-all">
+                     href="https://www.google.com/maps/search/?api=1&query=Polhena+Grand+Resort+%26+Banquet&query_place_id=ChIJrwwKV7k_4ToRk3lDwZHDly0" 
+                     target="_blank" 
+                     className="inline-block px-14 py-5 border border-[#d4af37] text-[#d4af37] rounded-full text-[10px] font-bold tracking-widest hover:bg-[#d4af37] hover:text-black transition-all">
                     GET DIRECTIONS
                  </a>
             </div>
