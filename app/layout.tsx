@@ -12,9 +12,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "අපේ මගුල් ගෙදර ඇවිත් යන්න එන්න... ආරාධනාවයි ❤️", 
-  description: "සම්පූර්ණ ආරාධනා පත්‍රය මෙතනින් බලන්න 👇",
+export const metadata = {
+  title: "Janani & Denuwan's Wedding",
+  description: "Wedding Invitation for Janani & Denuwan",
 };
 export default function RootLayout({
   children,
