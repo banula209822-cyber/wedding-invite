@@ -173,15 +173,15 @@ export default function UltimateWeddingInvitation() {
 </div>
             {/* Venue Section - Updated with Image */}
             <div className="max-w-4xl mx-auto px-6 mb-12">
-              <img src="/hotel.jpg" className="w-full h-96 object-cover rounded-[40px] shadow-2xl border-4 border-white" alt="Galle Face Hotel" />
+              <img src="/hotel.jpg" className="w-full h-96 object-cover rounded-[40px] shadow-2xl border-4 border-white" alt="Polhena Reef Resort" />
             </div>
 
             <div className="py-24 text-center bg-stone-900 text-white px-6">
                <MapPin className="mx-auto text-[#d4af37] mb-8" size={40} />
                <h2 className="text-3xl font-light uppercase tracking-[0.3em] mb-4">The Venue</h2>
-               <p className="text-stone-400 italic mb-10">Galle Face Hotel, Colombo 03</p>
+               <p className="text-stone-400 italic mb-10">Polhena Reef Resort, Polhena,Matara</p>
               <a 
-  href="https://maps.app.goo.gl/9T4p5wSny9B7hWre9" 
+  href="https://maps.app.goo.gl/r6V8Fk9A9T6N9K2U9" 
   target="_blank" 
   className="inline-block px-14 py-5 border border-[#d4af37] text-[#d4af37] rounded-full text-[10px] font-bold tracking-widest hover:bg-[#d4af37] hover:text-black transition-all"
 >
