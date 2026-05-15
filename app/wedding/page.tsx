@@ -8,6 +8,8 @@ export default function UltimateWeddingInvitation() {
   const [isOpen, setIsOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [rsvpData, setRsvpData] = useState({ name: '', guests: '1', kids: '0', hotel: 'polhena' });
+ const [isSending, setIsSending] = useState(false); // මේක උඩින් දාගන්න (rsvpData state එක ගාවින්)
 
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
@@ -28,13 +30,43 @@ export default function UltimateWeddingInvitation() {
     return () => clearInterval(interval);
   }, []);
 
-  const [rsvpData, setRsvpData] = useState({ name: '', guests: '1', kids: '0' });
-  const sendRSVP = () => {
-    const phoneNumber = "94771234567"; 
-    const message = `*Wedding RSVP*%0A*Name:* ${rsvpData.name}%0A*Adults:* ${rsvpData.guests}%0A*Kids:* ${rsvpData.kids}`;
-    window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
-  };
+  
+ 
 
+  const sendRSVP = async () => {
+    setIsSending(true); // බටන් එක එබුවම 'Sending' වෙන්න
+
+    const formURL = "https://docs.google.com/forms/d/e/1_Hnro3p2o8i7xDOZdt7G2xlFsSTBZTsSeaOUHuNoVnPY/formResponse";
+    
+    const formData = new FormData();
+    // මෙතන IDs ටික හරියටම තියෙනවද බලපන්
+    formData.append("entry.65316672", rsvpData.name || "N/A");   
+    formData.append("entry.991259989", rsvpData.guests || "0"); 
+    formData.append("entry.704811431", rsvpData.kids || "0");
+    formData.append("entry.384687127", rsvpData.hotel || "Selected Hotel");
+
+    try {
+      // 1. Sheet එකට දත්ත යැවීම
+      await fetch(formURL, {
+        method: "POST",
+        mode: "no-cors",
+        body: formData,
+      });
+
+      // 2. WhatsApp Message එක
+      const phoneNumber = "94703515466"; 
+      const message = `අපේ මගුල් ගෙදර ඇවිත් යන්න එන්න... ආරාධනාවයි ❤️ %0A%0A*RSVP විස්තර:* %0Aනම: ${rsvpData.name} %0Aවැඩිහිටියන්: ${rsvpData.guests} %0Aළමයින්: ${rsvpData.kids}`;
+      
+      window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+      alert("ස්තූතියි! ඔබගේ RSVP විස්තර අපට ලැබුණා.");
+
+    } catch (error) {
+      console.error("Error sending RSVP:", error);
+      alert("පොඩි අවුලක් වුණා. ආයෙත් උත්සාහ කරන්න.");
+    } finally {
+      setIsSending(false);
+    }
+  };
   const handleStart = () => {
     setIsOpen(true);
     setIsPlaying(true);
@@ -163,30 +195,48 @@ export default function UltimateWeddingInvitation() {
       </div>
 
       <button 
-        onClick={sendRSVP} 
-        className="w-full py-6 bg-stone-900 text-[#d4af37] rounded-full font-bold uppercase text-[10px] tracking-widest mt-8 flex items-center justify-center gap-3"
-      >
-        <Send size={14} /> Confirm via WhatsApp
-      </button>
+  onClick={sendRSVP} 
+  disabled={isSending}
+  className="..." 
+>
+  {isSending ? "Sending..." : "Confirm via WhatsApp"}
+</button>
     </div>
   </div>
 </div>
-            {/* Venue Section - Updated with Image */}
-            <div className="max-w-4xl mx-auto px-6 mb-12">
-              <img src="/hotel.jpg" className="w-full h-96 object-cover rounded-[40px] shadow-2xl border-4 border-white" alt="Polhena Reef Resort" />
-            </div>
+            {/* Venue Section */}
+<div className="py-24 text-center bg-stone-900 text-white px-6">
+  <MapPin className="mx-auto text-[#d4af37] mb-8" size={40} />
+  <h2 className="text-3xl font-light uppercase tracking-[0.3em] mb-4">The Venue</h2>
+  
+  {/* Hotel එක තෝරන Dropdown එක */}
+  <div className="mb-10">
+    <select 
+      value={rsvpData.hotel}
+      onChange={(e) => setRsvpData({...rsvpData, hotel: e.target.value})}
+      className="bg-stone-800 border border-[#d4af37] rounded-full px-6 py-2 text-stone-200 outline-none cursor-pointer"
+    >
+      <option value="polhena">Polhena Grand Resort</option>
+      <option value="custom">Custom Hotel Name</option>
+    </select>
+  </div>
 
-            <div className="py-24 text-center bg-stone-900 text-white px-6">
-               <MapPin className="mx-auto text-[#d4af37] mb-8" size={40} />
-               <h2 className="text-3xl font-light uppercase tracking-[0.3em] mb-4">The Venue</h2>
-               <p className="text-stone-400 italic mb-10">Polhena Reef Resort, Polhena,Matara</p>
-                 <a 
-                     href="https://www.google.com/maps/search/?api=1&query=Polhena+Grand+Resort+%26+Banquet&query_place_id=ChIJrwwKV7k_4ToRk3lDwZHDly0" 
-                     target="_blank" 
-                     className="inline-block px-14 py-5 border border-[#d4af37] text-[#d4af37] rounded-full text-[10px] font-bold tracking-widest hover:bg-[#d4af37] hover:text-black transition-all">
-                    GET DIRECTIONS
-                 </a>
-            </div>
+  <p className="text-stone-400 italic mb-10">
+    {rsvpData.hotel === "polhena" 
+      ? "Polhena Grand Resort & Banquet, Polhena, Matara" 
+      : "Custom Hotel Address, Location, Sri Lanka"}
+  </p>
+
+  <a 
+    href={rsvpData.hotel === "polhena" 
+      ? "https://www.google.com/maps/search/?api=1&query=Polhena+Grand+Resort+%26+Banquet" 
+      : "https://www.google.com/maps/search/?api=1&query=Custom+Hotel+Location"} 
+    target="_blank"
+    className="inline-block px-14 py-5 border border-[#d4af37] text-[#d4af37] rounded-full text-[10px] font-bold tracking-widest hover:bg-[#d4af37] hover:text-black transition-all"
+  >
+    GET DIRECTIONS
+  </a>
+</div>
 
             <footer className="py-20 text-center opacity-30 text-[9px] uppercase tracking-[0.6em]">Designed for Janani & Denuwan | 2026</footer>
           </motion.div>
