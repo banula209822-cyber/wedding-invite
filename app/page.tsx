@@ -180,7 +180,7 @@ export default function UltimateWeddingInvitation() {
                <MapPin className="mx-auto text-[#d4af37] mb-8" size={40} />
                <h2 className="text-3xl font-light uppercase tracking-[0.3em] mb-4">The Venue</h2>
                <p className="text-stone-400 italic mb-10">Galle Face Hotel, Colombo 03</p>
-               <a href="https://maps.app.goo.gl/YourLink" target="_blank" className="inline-block px-14 py-5 border border-[#d4af37] text-[#d4af37] rounded-full text-[10px] font-bold tracking-[0.4em] hover:bg-[#d4af37] hover:text-black transition-all">GET DIRECTIONS</a>
+               <a href="https://maps.app.goo.gl/2vusfyLCawampvty9k px-14 py-5 border border-[#d4af37] text-[#d4af37] rounded-full text-[10px] font-bold tracking-[0.4em] hover:bg-[#d4af37] hover:text-black transition-all">GET DIRECTIONS</a>
             </div>
 
             <footer className="py-20 text-center opacity-30 text-[9px] uppercase tracking-[0.6em]">Designed for Janani & Denuwan | 2026</footer>
