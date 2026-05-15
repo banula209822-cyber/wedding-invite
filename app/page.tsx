@@ -1,16 +1,16 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Heart, Sparkles, Music, VolumeX, Send } from 'lucide-react';
+import { MapPin, Heart, Sparkles, Music, VolumeX } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { saveRSVPToDb } from './actions'; // අර හදපු action එක import කරනවා
 
 export default function UltimateWeddingInvitation() {
   const [isOpen, setIsOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [rsvpData, setRsvpData] = useState({ name: '', guests: '1', kids: '0', hotel: 'polhena' });
- const [isSending, setIsSending] = useState(false); // මේක උඩින් දාගන්න (rsvpData state එක ගාවින්)
-
+  const [isSending, setIsSending] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
@@ -30,40 +30,49 @@ export default function UltimateWeddingInvitation() {
     return () => clearInterval(interval);
   }, []);
 
-  
- 
-
   const sendRSVP = async () => {
-    setIsSending(true); // බටන් එක එබුවම 'Sending' වෙන්න
+    if (!rsvpData.name) {
+      alert("කරුණාකර ඔබේ නම ඇතුළත් කරන්න.");
+      return;
+    }
 
-    const formURL = "https://docs.google.com/forms/d/e/1_Hnro3p2o8i7xDOZdt7G2xlFsSTBZTsSeaOUHuNoVnPY/formResponse";
-    
-    const formData = new FormData();
-    // මෙතන IDs ටික හරියටම තියෙනවද බලපන්
-    formData.append("entry.65316672", rsvpData.name || "N/A");   
-    formData.append("entry.991259989", rsvpData.guests || "0"); 
-    formData.append("entry.704811431", rsvpData.kids || "0");
-    formData.append("entry.384687127", rsvpData.hotel || "Selected Hotel");
+    setIsSending(true);
 
     try {
-// මේ විදිහට fetch එක දාපන් (await එක අයින් කරපන්)
-    fetch(formURL, { method: "POST", mode: "no-cors", body: formData })
-      .catch(err => console.log("Form error:", err));
+      // 1. Database එකට Save කිරීම (පට්ටම වැදගත් කෑල්ල)
+      const dbResult = await saveRSVPToDb(rsvpData);
+      
+      // 2. Google Form එකට යැවීම
+      const formURL = "https://docs.google.com/forms/d/e/1_Hnro3p2o8i7xDOZdt7G2xlFsSTBZTsSeaOUHuNoVnPY/formResponse";
+      const formData = new FormData();
+      formData.append("entry.65316672", rsvpData.name);   
+      formData.append("entry.991259989", rsvpData.guests); 
+      formData.append("entry.704811431", rsvpData.kids);
+      formData.append("entry.384687127", rsvpData.hotel);
 
-      // 2. WhatsApp Message එක
+      fetch(formURL, { method: "POST", mode: "no-cors", body: formData })
+        .catch(err => console.log("Form error:", err));
+
+      // 3. WhatsApp Message එක
       const phoneNumber = "94703515466"; 
-      const message = `අපේ මගුල් ගෙදර ඇවිත් යන්න එන්න... ආරාධනාවයි ❤️ %0A%0A*RSVP විස්තර:* %0Aනම: ${rsvpData.name} %0Aවැඩිහිටියන්: ${rsvpData.guests} %0Aළමයින්: ${rsvpData.kids}`;
+      const message = `අපේ මගුල් ගෙදර ඇවිත් යන්න එන්න... ආරාධනාවයි ❤️ %0A%0A*RSVP විස්තර:* %0Aනම: ${rsvpData.name} %0Aවැඩිහිටියන්: ${rsvpData.guests} %0Aළමයින්: ${rsvpData.kids} %0Aහෝටලය: ${rsvpData.hotel}`;
       
       window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
-      alert("ස්තූතියි! ඔබගේ RSVP විස්තර අපට ලැබුණා.");
+      
+      if (dbResult.success) {
+        alert("ස්තූතියි! ඔබගේ RSVP විස්තර සාර්ථකව ලැබුණා.");
+      } else {
+        alert("විස්තර ලැබුණා, නමුත් database එකේ පොඩි අවුලක්. කරුණාකර WhatsApp පණිවිඩය එවන්න.");
+      }
 
     } catch (error) {
-      console.error("Error sending RSVP:", error);
+      console.error("Error:", error);
       alert("පොඩි අවුලක් වුණා. ආයෙත් උත්සාහ කරන්න.");
     } finally {
       setIsSending(false);
     }
   };
+
   const handleStart = () => {
     setIsOpen(true);
     setIsPlaying(true);
@@ -103,7 +112,6 @@ export default function UltimateWeddingInvitation() {
               {isPlaying ? <Music className="text-[#d4af37] animate-bounce" size={20}/> : <VolumeX size={20}/>}
             </button>
 
-            {/* Hero Image */}
             <div className="h-[90vh] w-full relative overflow-hidden">
               <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/couple.jpg')" }} />
               <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-[#faf8f5]" />
@@ -112,7 +120,6 @@ export default function UltimateWeddingInvitation() {
               </div>
             </div>
 
-            {/* Countdown */}
             <div className="max-w-4xl mx-auto py-24 px-6 text-center">
               <div className="grid grid-cols-4 gap-3 md:gap-6">
                 {[
@@ -129,111 +136,76 @@ export default function UltimateWeddingInvitation() {
               </div>
             </div>
 
-            {/* Gallery Section - Updated Names with Spaces */}
-            <div className="py-24 bg-stone-50">
-              <div className="max-w-6xl mx-auto px-6">
-                <h3 className="text-center text-2xl font-light tracking-[0.3em] uppercase mb-16">Our Gallery</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div className="rounded-[40px] overflow-hidden shadow-xl h-[500px]">
-                    <img src="/couple-gallery 1.jpg" className="w-full h-full object-cover" alt="Gallery 1" />
+            <div className="py-24 max-w-2xl mx-auto px-6 text-center">
+              <div className="bg-white p-10 md:p-20 rounded-[60px] shadow-2xl border border-stone-50">
+                <Heart className="mx-auto text-rose-200 mb-8" fill="currentColor" size={45} />
+                <h2 className="text-3xl font-light mb-12 tracking-widest uppercase">RSVP</h2>
+                
+                <div className="space-y-6 text-left">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-400 ml-5">Guest Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="Your Name" 
+                      value={rsvpData.name}
+                      onChange={(e) => setRsvpData({...rsvpData, name: e.target.value})} 
+                      className="w-full bg-stone-50 rounded-full px-8 py-5 outline-none text-stone-800" 
+                    />
                   </div>
-                  <div className="rounded-[40px] overflow-hidden shadow-xl h-[500px] md:mt-16">
-                    <img src="/couple-gallery 2.jpg" className="w-full h-full object-cover" alt="Gallery 2" />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-400 ml-5">Adults</label>
+                      <input 
+                        type="number" 
+                        min="1"
+                        value={rsvpData.guests}
+                        placeholder="No. of Adults" 
+                        onChange={(e) => setRsvpData({...rsvpData, guests: e.target.value})} 
+                        className="w-full bg-stone-50 rounded-full px-8 py-5 outline-none text-stone-800" 
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-400 ml-5">Kids</label>
+                      <input 
+                        type="number" 
+                        min="0"
+                        value={rsvpData.kids}
+                        placeholder="No. of Kids" 
+                        onChange={(e) => setRsvpData({...rsvpData, kids: e.target.value})} 
+                        className="w-full bg-stone-50 rounded-full px-8 py-5 outline-none text-stone-800" 
+                      />
+                    </div>
                   </div>
-                  <div className="rounded-[40px] overflow-hidden shadow-xl h-[500px]">
-                    <img src="/couple-gallery 3.jpg" className="w-full h-full object-cover" alt="Gallery 3" />
-                  </div>
+
+                  <button 
+                    onClick={sendRSVP} 
+                    disabled={isSending}
+                    className="w-full mt-8 bg-stone-900 text-white rounded-full py-5 font-bold tracking-widest uppercase text-[10px] hover:bg-stone-800 transition-all disabled:opacity-50"
+                  >
+                    {isSending ? "Sending..." : "Confirm & Send RSVP"}
+                  </button>
                 </div>
               </div>
             </div>
 
-            {/* --- UPDATED RSVP SECTION WITH TEXT INPUTS --- */}
-<div className="py-24 max-w-2xl mx-auto px-6 text-center">
-  <div className="bg-white p-10 md:p-20 rounded-[60px] shadow-2xl border border-stone-50">
-    <Heart className="mx-auto text-rose-200 mb-8" fill="currentColor" size={45} />
-    <h2 className="text-3xl font-light mb-12 tracking-widest uppercase">RSVP</h2>
-    
-    <div className="space-y-6 text-left">
-      {/* Name Input */}
-      <div className="space-y-2">
-        <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-400 ml-5">Guest Name</label>
-        <input 
-          type="text" 
-          placeholder="Your Name" 
-          onChange={(e) => setRsvpData({...rsvpData, name: e.target.value})} 
-          className="w-full bg-stone-50 rounded-full px-8 py-5 outline-none text-stone-800" 
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        {/* Adults Input */}
-        <div className="space-y-2">
-          <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-400 ml-5">Adults</label>
-          <input 
-            type="number" 
-            min="1"
-            placeholder="No. of Adults" 
-            onChange={(e) => setRsvpData({...rsvpData, guests: e.target.value})} 
-            className="w-full bg-stone-50 rounded-full px-8 py-5 outline-none text-stone-800" 
-          />
-        </div>
-        
-        {/* Kids Input */}
-        <div className="space-y-2">
-          <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-400 ml-5">Kids</label>
-          <input 
-            type="number" 
-            min="0"
-            placeholder="No. of Kids" 
-            onChange={(e) => setRsvpData({...rsvpData, kids: e.target.value})} 
-            className="w-full bg-stone-50 rounded-full px-8 py-5 outline-none text-stone-800" 
-          />
-        </div>
-      </div>
-
-      <button 
-  onClick={sendRSVP} 
-  disabled={isSending}
-  className="..." 
->
-  {isSending ? "Sending..." : "Confirm via WhatsApp"}
-</button>
-    </div>
-  </div>
-</div>
-            {/* Venue Section */}
-<div className="py-24 text-center bg-stone-900 text-white px-6">
-  <MapPin className="mx-auto text-[#d4af37] mb-8" size={40} />
-  <h2 className="text-3xl font-light uppercase tracking-[0.3em] mb-4">The Venue</h2>
-  
-  {/* Hotel එක තෝරන Dropdown එක */}
-  <div className="mb-10">
-    <select 
-      value={rsvpData.hotel}
-      onChange={(e) => setRsvpData({...rsvpData, hotel: e.target.value})}
-      className="bg-stone-800 border border-[#d4af37] rounded-full px-6 py-2 text-stone-200 outline-none cursor-pointer"
-    >
-      <option value="polhena">Polhena Grand Resort</option>
-      <option value="custom">Custom Hotel Name</option>
-    </select>
-  </div>
-
-  <p className="text-stone-400 italic mb-10">
-    {rsvpData.hotel === "polhena" 
-      ? "Polhena Grand Resort & Banquet, Polhena, Matara" 
-      : "Custom Hotel Address, Location, Sri Lanka"}
-  </p>
-
-  <a 
-    href={rsvpData.hotel === "polhena" 
-      ? "https://www.google.com/maps/search/?api=1&query=Polhena+Grand+Resort+%26+Banquet" 
-      : "https://www.google.com/maps/search/?api=1&query=Custom+Hotel+Location"} 
-    target="_blank"
-    className="inline-block px-14 py-5 border border-[#d4af37] text-[#d4af37] rounded-full text-[10px] font-bold tracking-widest hover:bg-[#d4af37] hover:text-black transition-all"
-  >
-    GET DIRECTIONS
-  </a>
-</div>
+            <div className="py-24 text-center bg-stone-900 text-white px-6">
+              <MapPin className="mx-auto text-[#d4af37] mb-8" size={40} />
+              <h2 className="text-3xl font-light uppercase tracking-[0.3em] mb-4">The Venue</h2>
+              <div className="mb-10">
+                <select 
+                  value={rsvpData.hotel}
+                  onChange={(e) => setRsvpData({...rsvpData, hotel: e.target.value})}
+                  className="bg-stone-800 border border-[#d4af37] rounded-full px-6 py-2 text-stone-200 outline-none cursor-pointer"
+                >
+                  <option value="polhena">Polhena Grand Resort</option>
+                  <option value="custom">Other Hotel</option>
+                </select>
+              </div>
+              <p className="text-stone-400 italic mb-10">Polhena Grand Resort & Banquet, Matara</p>
+              <a href="https://maps.app.goo.gl/..." target="_blank" className="inline-block px-14 py-5 border border-[#d4af37] text-[#d4af37] rounded-full text-[10px] font-bold tracking-widest hover:bg-[#d4af37]">GET DIRECTIONS</a>
+            </div>
 
             <footer className="py-20 text-center opacity-30 text-[9px] uppercase tracking-[0.6em]">Designed for Janani & Denuwan | 2026</footer>
           </motion.div>
