@@ -46,12 +46,9 @@ export default function UltimateWeddingInvitation() {
     formData.append("entry.384687127", rsvpData.hotel || "Selected Hotel");
 
     try {
-      // 1. Sheet එකට දත්ත යැවීම
-      await fetch(formURL, {
-        method: "POST",
-        mode: "no-cors",
-        body: formData,
-      });
+// මේ විදිහට fetch එක දාපන් (await එක අයින් කරපන්)
+    fetch(formURL, { method: "POST", mode: "no-cors", body: formData })
+      .catch(err => console.log("Form error:", err));
 
       // 2. WhatsApp Message එක
       const phoneNumber = "94703515466"; 
